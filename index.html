@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eid Mubarak</title>
+
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;600&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    body {
+      height: 100vh;
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      overflow: hidden;
+    }
+
+    .container {
+      max-width: 700px;
+      padding: 30px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 0 40px rgba(0,0,0,0.3);
+      animation: fadeIn 2s ease;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+
+    .highlight {
+      color: #00ffd5;
+    }
+
+    p {
+      font-size: 1.1rem;
+      line-height: 1.6;
+      margin: 15px 0;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 12px 25px;
+      border: none;
+      border-radius: 30px;
+      background: #00ffd5;
+      color: black;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      transform: scale(1.1);
+      background: #00c9a7;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Floating stars */
+    .star {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      background: white;
+      animation: move 10s linear infinite;
+    }
+
+    @keyframes move {
+      from { transform: translateY(0); }
+      to { transform: translateY(-100vh); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>🌙 Eid Mubarak, <span class="highlight" id="username">Friend</span>! ✨</h1>
+
+    <p id="message"></p>
+
+    <button onclick="shareWhatsApp()">📤 Share on WhatsApp</button>
+  </div>
+
+  <!-- Background Music -->
+  <audio autoplay loop>
+    <source src="https://cdn.pixabay.com/audio/2022/03/15/audio_115b9b8c1d.mp3" type="audio/mpeg">
+  </audio>
+
+  <script>
+    // Get Name from URL
+    const params = new URLSearchParams(window.location.search);
+    const name = params.get("name");
+
+    if (name) {
+      document.getElementById("username").innerText = name;
+    }
+
+    // Typing Effect Message
+    const text = `
+May this beautiful Eid bring happiness, success, and endless blessings into your life. 
+May your heart shine with joy and your home be filled with peace and prosperity. 
+Wishing you a magical and unforgettable Eid! 🌙✨`;
+
+    let i = 0;
+    function typeWriter() {
+      if (i < text.length) {
+        document.getElementById("message").innerHTML += text.charAt(i);
+        i++;
+        setTimeout(typeWriter, 30);
+      }
+    }
+
+    typeWriter();
+
+    // WhatsApp Share
+    function shareWhatsApp() {
+      const currentURL = window.location.href;
+      const msg = `🌙 Eid Mubarak! Click to see your surprise: ${currentURL}`;
+      window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`);
+    }
+
+    // Generate stars
+    for (let i = 0; i < 100; i++) {
+      const star = document.createElement("div");
+      star.classList.add("star");
+      star.style.left = Math.random() * 100 + "vw";
+      star.style.top = Math.random() * 100 + "vh";
+      star.style.animationDuration = (Math.random() * 5 + 5) + "s";
+      document.body.appendChild(star);
+    }
+  </script>
+
+</body>
+</html>
