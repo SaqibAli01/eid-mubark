@@ -1,152 +1,480 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Eid Mubarak</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Eid Mubarak — Tech9et</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --gold:#f5c518;
+    --teal:#00ffd5;
+    --dark:#050d1a;
+  }
 
-  <!-- Google Font -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;600&display=swap" rel="stylesheet">
+  html,body{
+    background:var(--dark);
+    color:#fff;
+    font-family:'Poppins',sans-serif;
+    overflow:hidden;
+    height:100%;
+    width:100%;
+  }
 
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Poppins', sans-serif;
-    }
+  /* ── CANVAS LAYERS ── */
+  #bgCanvas{position:fixed;inset:0;z-index:0}
+  #fwCanvas{position:fixed;inset:0;z-index:5;pointer-events:none}
 
-    body {
-      height: 100vh;
-      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-      color: white;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      overflow: hidden;
-    }
+  /* ── SPLASH SCREEN ── */
+  #splash{
+    position:fixed;inset:0;z-index:100;
+    background:var(--dark);
+    display:flex;flex-direction:column;
+    align-items:center;justify-content:center;
+    gap:clamp(12px,3vw,22px);
+    padding:20px;
+    transition:opacity 1s ease, visibility 1s ease;
+  }
+  #splash.hide{opacity:0;visibility:hidden}
 
-    .container {
-      max-width: 700px;
-      padding: 30px;
-      border-radius: 20px;
-      background: rgba(255, 255, 255, 0.05);
-      backdrop-filter: blur(10px);
-      box-shadow: 0 0 40px rgba(0,0,0,0.3);
-      animation: fadeIn 2s ease;
-    }
+  .logo-text{
+    font-family:'Cinzel Decorative',cursive;
+    font-size:clamp(1rem,5vw,2rem);
+    color:var(--teal);
+    letter-spacing:clamp(2px,1vw,6px);
+    text-shadow:0 0 20px var(--teal),0 0 40px var(--teal);
+    animation:pulse 2s infinite;
+    text-align:center;
+  }
 
-    h1 {
-      font-size: 2.5rem;
-      margin-bottom: 10px;
-    }
+  .splash-sub{
+    font-size:clamp(.75rem,2.5vw,.95rem);
+    opacity:.6;
+    letter-spacing:clamp(1px,.5vw,3px);
+    text-align:center;
+  }
 
-    .highlight {
-      color: #00ffd5;
-    }
+  .name-input-wrap{
+    display:flex;flex-direction:column;align-items:center;
+    gap:clamp(10px,2vw,14px);
+    animation:fadeUp .8s ease .4s both;
+    width:100%;max-width:320px;
+  }
+  .name-input-wrap input{
+    padding:12px 22px;border-radius:50px;border:2px solid var(--teal);
+    background:rgba(0,255,213,.07);color:#fff;
+    font-size:clamp(.9rem,3vw,1rem);
+    outline:none;text-align:center;
+    width:100%;
+    transition:.3s;
+  }
+  .name-input-wrap input:focus{box-shadow:0 0 20px var(--teal)}
+  .name-input-wrap input::placeholder{color:rgba(255,255,255,.4)}
 
-    p {
-      font-size: 1.1rem;
-      line-height: 1.6;
-      margin: 15px 0;
-    }
+  .reveal-btn{
+    padding:clamp(10px,2.5vw,14px) clamp(28px,6vw,42px);
+    border:none;border-radius:50px;
+    background:linear-gradient(135deg,var(--teal),#00a896);
+    color:#000;font-weight:700;
+    font-size:clamp(.88rem,3vw,1rem);
+    cursor:pointer;letter-spacing:1px;transition:.3s;
+    box-shadow:0 0 25px rgba(0,255,213,.4);
+    width:100%;
+  }
+  .reveal-btn:hover{transform:scale(1.05);box-shadow:0 0 40px rgba(0,255,213,.7)}
+  .reveal-btn:active{transform:scale(.97)}
 
-    button {
-      margin-top: 20px;
-      padding: 12px 25px;
-      border: none;
-      border-radius: 30px;
-      background: #00ffd5;
-      color: black;
-      font-weight: bold;
-      cursor: pointer;
-      transition: 0.3s;
-    }
+  /* ── MAIN SCENE ── */
+  #scene{
+    position:fixed;inset:0;z-index:10;
+    display:none;
+    align-items:center;justify-content:center;
+    flex-direction:column;
+    overflow-y:auto;
+    overflow-x:hidden;
+    padding:10px 10px 20px;
+  }
 
-    button:hover {
-      transform: scale(1.1);
-      background: #00c9a7;
-    }
+  /* Moon */
+  .moon-wrap{
+    position:relative;
+    margin-bottom:clamp(-30px,-4vw,-10px);
+    animation:moonFloat 4s ease-in-out infinite;
+    flex-shrink:0;
+  }
+  .moon{
+    width:clamp(60px,10vw,120px);
+    height:clamp(60px,10vw,120px);
+    background:radial-gradient(circle at 35% 35%,#fffbe6,#f5c518 60%,#c8860a);
+    border-radius:50%;
+    box-shadow:0 0 40px #f5c51888,0 0 80px #f5c51844,0 0 120px #f5c51822;
+    position:relative;overflow:hidden;
+  }
+  .moon::after{
+    content:'';position:absolute;top:12%;left:22%;
+    width:105%;height:105%;
+    background:var(--dark);border-radius:50%;
+    box-shadow:inset -8px -8px 20px rgba(0,0,0,.3);
+  }
+  .moon-star{
+    position:absolute;top:50%;left:110%;transform:translateY(-50%);
+    font-size:clamp(1.2rem,3.5vw,2.2rem);
+    animation:starSpin 6s linear infinite;
+  }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+  /* Card */
+  .card{
+    background:rgba(255,255,255,.04);
+    backdrop-filter:blur(20px);
+    -webkit-backdrop-filter:blur(20px);
+    border:1px solid rgba(255,255,255,.1);
+    border-radius:clamp(18px,3vw,28px);
+    padding:clamp(20px,4vw,50px) clamp(18px,5vw,65px);
+    max-width:680px;
+    width:min(92vw, 680px);
+    text-align:center;
+    box-shadow:0 0 60px rgba(0,0,0,.5),inset 0 0 40px rgba(255,255,255,.02);
+    animation:cardIn 1s cubic-bezier(.22,1,.36,1) both;
+    position:relative;
+    flex-shrink:0;
+  }
 
-    /* Floating stars */
-    .star {
-      position: absolute;
-      width: 2px;
-      height: 2px;
-      background: white;
-      animation: move 10s linear infinite;
-    }
+  .card::before{
+    content:'';position:absolute;inset:-1px;
+    border-radius:clamp(18px,3vw,28px);
+    background:linear-gradient(135deg,var(--teal),transparent,var(--gold),transparent,var(--teal));
+    background-size:300% 300%;
+    animation:borderGlow 4s linear infinite;
+    z-index:-1;
+    opacity:.5;
+  }
 
-    @keyframes move {
-      from { transform: translateY(0); }
-      to { transform: translateY(-100vh); }
-    }
-  </style>
+  .eid-title{
+    font-family:'Cinzel Decorative',cursive;
+    font-size:clamp(1.2rem,4.5vw,3rem);
+    background:linear-gradient(135deg,var(--gold),#fff,var(--teal));
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+    background-clip:text;
+    line-height:1.3;
+    animation:shimmer 3s linear infinite;
+    background-size:200% auto;
+  }
+
+  .user-name{
+    font-size:clamp(.95rem,2.8vw,1.7rem);
+    color:var(--teal);
+    margin-top:6px;
+    text-shadow:0 0 15px var(--teal);
+    animation:pulse 2s infinite;
+    word-break:break-word;
+  }
+
+  .divider{
+    width:60%;height:1px;
+    background:linear-gradient(90deg,transparent,var(--gold),transparent);
+    margin:clamp(12px,2vw,18px) auto;
+  }
+
+  #typeMsg{
+    font-size:clamp(.82rem,2vw,1.05rem);
+    line-height:2;
+    color:rgba(255,255,255,.88);
+    min-height:clamp(60px,12vw,90px);
+    text-align:justify;
+    text-align-last:center;
+    padding:0 clamp(4px,1.5vw,12px);
+    letter-spacing:.3px;
+    word-spacing:1.5px;
+  }
+
+  .cursor{
+    display:inline-block;width:2px;height:1.1em;
+    background:var(--teal);animation:blink .7s infinite;
+    vertical-align:middle;margin-left:2px;
+  }
+
+  .btn-row{
+    display:flex;gap:clamp(8px,2vw,14px);
+    justify-content:center;flex-wrap:wrap;
+    margin-top:clamp(16px,3vw,24px);
+  }
+
+  .action-btn{
+    padding:clamp(9px,2vw,12px) clamp(16px,3.5vw,26px);
+    border:none;border-radius:50px;
+    font-weight:600;
+    font-size:clamp(.78rem,2.2vw,.92rem);
+    cursor:pointer;transition:.3s;letter-spacing:.5px;
+    white-space:nowrap;
+  }
+  .btn-fire{
+    background:linear-gradient(135deg,#ff6b35,#f7c59f);
+    color:#000;box-shadow:0 0 20px rgba(255,107,53,.4);
+  }
+  .btn-fire:hover{transform:scale(1.08);box-shadow:0 0 35px rgba(255,107,53,.7)}
+  .btn-fire:active{transform:scale(.96)}
+  .btn-share{
+    background:linear-gradient(135deg,#25d366,#128c7e);
+    color:#fff;box-shadow:0 0 20px rgba(37,211,102,.3);
+  }
+  .btn-share:hover{transform:scale(1.08)}
+  .btn-share:active{transform:scale(.96)}
+  .btn-reset{
+    background:rgba(255,255,255,.1);
+    color:#fff;border:1px solid rgba(255,255,255,.2);
+  }
+  .btn-reset:hover{background:rgba(255,255,255,.2)}
+  .btn-reset:active{transform:scale(.96)}
+
+  /* Tech9et badge */
+  .badge{
+    margin-top:clamp(14px,2.5vw,22px);
+    font-size:clamp(.68rem,1.8vw,.8rem);
+    letter-spacing:2px;
+    color:rgba(255,255,255,.4);
+  }
+  .badge span{color:var(--teal);font-weight:600}
+
+  /* Lanterns — hide on very small screens */
+  .lantern{
+    position:fixed;
+    font-size:clamp(1.4rem,3.5vw,2.8rem);
+    animation:lanternSwing 3s ease-in-out infinite;
+    z-index:8;user-select:none;
+  }
+  .lantern:nth-child(1){top:1vh;left:2vw;animation-delay:0s}
+  .lantern:nth-child(2){top:1vh;right:2vw;animation-delay:.5s}
+  .lantern:nth-child(3){top:1vh;left:12vw;animation-delay:1s}
+  .lantern:nth-child(4){top:1vh;right:12vw;animation-delay:1.5s}
+
+  /* ── MOBILE TWEAKS ── */
+  @media(max-width:480px){
+    .lantern:nth-child(3),
+    .lantern:nth-child(4){display:none}
+
+    .btn-row{flex-direction:column;align-items:center}
+    .action-btn{width:100%;max-width:260px}
+  }
+
+  @media(max-height:600px){
+    .moon-wrap{margin-bottom:-20px}
+    .moon{width:50px;height:50px}
+    .moon-star{font-size:1rem}
+    #typeMsg{min-height:50px}
+  }
+
+  /* ── KEYFRAMES ── */
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes cardIn{from{opacity:0;transform:translateY(60px) scale(.95)}to{opacity:1;transform:translateY(0) scale(1)}}
+  @keyframes moonFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+  @keyframes starSpin{from{transform:translateY(-50%) rotate(0deg) translateX(10px)}to{transform:translateY(-50%) rotate(360deg) translateX(10px)}}
+  @keyframes lanternSwing{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(8deg)}}
+  @keyframes shimmer{to{background-position:200% center}}
+  @keyframes borderGlow{0%{background-position:0% 50%}100%{background-position:300% 50%}}
+</style>
 </head>
 <body>
 
-  <div class="container">
-    <h1>🌙 Eid Mubarak, <span class="highlight" id="username">Friend</span>! ✨</h1>
+<!-- BG + Firework canvases -->
+<canvas id="bgCanvas"></canvas>
+<canvas id="fwCanvas"></canvas>
 
-    <p id="message"></p>
+<!-- Lanterns -->
+<div class="lantern">🏮</div>
+<div class="lantern">🏮</div>
+<div class="lantern">🏮</div>
+<div class="lantern">🏮</div>
 
-    <button onclick="shareWhatsApp()">📤 Share on WhatsApp</button>
+<!-- SPLASH -->
+<div id="splash">
+  <div class="logo-text">✦ TECH9ET ✦</div>
+  <div class="splash-sub">presents an Eid surprise for you</div>
+  <div class="name-input-wrap">
+    <input id="nameInput" placeholder="Apna naam likhein..." maxlength="30" />
+    <button class="reveal-btn" onclick="startExperience()">🌙 Reveal Magic</button>
+  </div>
+</div>
+
+<!-- MAIN SCENE -->
+<div id="scene">
+  <div class="moon-wrap">
+    <div class="moon"></div>
+    <div class="moon-star">⭐</div>
   </div>
 
-  <!-- Background Music -->
-  <audio autoplay loop>
-    <source src="https://cdn.pixabay.com/audio/2022/03/15/audio_115b9b8c1d.mp3" type="audio/mpeg">
-  </audio>
+  <div class="card">
+    <div class="eid-title">🌙 Eid Mubarak 🌙</div>
+    <div class="user-name" id="displayName"></div>
+    <div class="divider"></div>
+    <div id="typeMsg"><span class="cursor"></span></div>
+    <div class="btn-row">
+      <button class="action-btn btn-fire" onclick="launchFireworks()">🎆 Celebrate!</button>
+      <button class="action-btn btn-share" onclick="shareWA()">📤 WhatsApp Share</button>
+      <button class="action-btn btn-reset" onclick="resetPage()">🔄 Reset</button>
+    </div>
+    <div class="badge">Crafted with ❤️ by <span>Tech9et</span></div>
+    <div class="badge" style="margin-top:6px;opacity:.35">Created by <span style="color:var(--gold);font-weight:600;opacity:1">Saqib Ali</span></div>
+  </div>
+</div>
 
-  <script>
-    // Get Name from URL
-    const params = new URLSearchParams(window.location.search);
-    const name = params.get("name");
+<script>
+// ── BG PARTICLES ──
+const bgC = document.getElementById('bgCanvas');
+const bgX = bgC.getContext('2d');
+let W, H, particles = [];
 
-    if (name) {
-      document.getElementById("username").innerText = name;
+function resize(){
+  W = bgC.width = window.innerWidth;
+  H = bgC.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+function mkParticle(){
+  return {
+    x: Math.random()*W, y: Math.random()*H,
+    r: Math.random()*1.8+.3,
+    vx:(Math.random()-.5)*.3, vy:-(Math.random()*.4+.1),
+    alpha: Math.random(),
+    color: Math.random()<.5 ? '#f5c518' : '#00ffd5'
+  };
+}
+for(let i=0;i<180;i++) particles.push(mkParticle());
+
+function drawBG(){
+  bgX.clearRect(0,0,W,H);
+  particles.forEach(p=>{
+    bgX.beginPath();
+    bgX.arc(p.x,p.y,p.r,0,Math.PI*2);
+    bgX.fillStyle = p.color;
+    bgX.globalAlpha = p.alpha;
+    bgX.fill();
+    p.x+=p.vx; p.y+=p.vy;
+    p.alpha += (Math.random()-.5)*.02;
+    p.alpha = Math.max(.05,Math.min(1,p.alpha));
+    if(p.y<-5||p.x<-5||p.x>W+5){
+      Object.assign(p, mkParticle());
+      p.y = H+5;
     }
+  });
+  bgX.globalAlpha=1;
+  requestAnimationFrame(drawBG);
+}
+drawBG();
 
-    // Typing Effect Message
-    const text = `
-May this beautiful Eid bring happiness, success, and endless blessings into your life. 
-May your heart shine with joy and your home be filled with peace and prosperity. 
-Wishing you a magical and unforgettable Eid! 🌙✨`;
+// ── FIREWORKS ──
+const fwC = document.getElementById('fwCanvas');
+const fwX = fwC.getContext('2d');
+fwC.width = W; fwC.height = H;
+window.addEventListener('resize',()=>{fwC.width=W;fwC.height=H});
 
-    let i = 0;
-    function typeWriter() {
-      if (i < text.length) {
-        document.getElementById("message").innerHTML += text.charAt(i);
-        i++;
-        setTimeout(typeWriter, 30);
+let sparks = [];
+function addFirework(){
+  const cx = Math.random()*W*.8+W*.1;
+  const cy = Math.random()*H*.5+H*.05;
+  const hue = Math.random()*360;
+  for(let i=0;i<80;i++){
+    const angle = (Math.PI*2/80)*i;
+    const speed = Math.random()*5+2;
+    sparks.push({
+      x:cx,y:cy,
+      vx:Math.cos(angle)*speed,
+      vy:Math.sin(angle)*speed,
+      alpha:1, hue, r:Math.random()*2+1,
+      gravity:.08
+    });
+  }
+}
+
+let fwActive = false;
+function animFW(){
+  if(!fwActive){fwX.clearRect(0,0,W,H);return;}
+  fwX.fillStyle='rgba(5,13,26,.18)';
+  fwX.fillRect(0,0,W,H);
+  sparks = sparks.filter(s=>{
+    s.x+=s.vx; s.y+=s.vy; s.vy+=s.gravity;
+    s.alpha-=.012;
+    fwX.beginPath();
+    fwX.arc(s.x,s.y,s.r,0,Math.PI*2);
+    fwX.fillStyle=`hsla(${s.hue},100%,65%,${s.alpha})`;
+    fwX.fill();
+    return s.alpha>0;
+  });
+  if(sparks.length===0) fwActive=false;
+  requestAnimationFrame(animFW);
+}
+
+function launchFireworks(){
+  fwActive=true;
+  let count=0;
+  const iv=setInterval(()=>{
+    addFirework();
+    count++;
+    if(count>=8) clearInterval(iv);
+  },200);
+  animFW();
+}
+
+// ── EXPERIENCE ──
+let userName = '';
+
+function startExperience(){
+  const val = document.getElementById('nameInput').value.trim();
+  userName = val || 'Dost';
+  document.getElementById('splash').classList.add('hide');
+  setTimeout(()=>{
+    const scene = document.getElementById('scene');
+    scene.style.display='flex';
+    document.getElementById('displayName').textContent = userName;
+    typeMessage();
+    setTimeout(launchFireworks, 800);
+  },1000);
+}
+
+function typeMessage(){
+  const msgs = [
+    `✨ ${userName}, Tech9et ki taraf se aapko Eid Mubarak!`,
+    `🌙 Yeh Eid aapke liye khushiyon aur barkatoon se bhari ho.`,
+    `💫 Aapki zindagi mein kamyabi, sukoon aur mohabbat hamesha rahe.`,
+    `🎉 Eid ke is khubsurat mauqe par dil ki gehraiyoon se mubarak ho!`
+  ];
+  const full = msgs.join('\n');
+  const el = document.getElementById('typeMsg');
+  el.innerHTML = '<span class="cursor"></span>';
+  let i=0;
+  function type(){
+    if(i<full.length){
+      const ch = full.charAt(i);
+      const cursor = el.querySelector('.cursor');
+      if(ch==='\n'){
+        cursor.insertAdjacentHTML('beforebegin','<br>');
+      } else {
+        cursor.insertAdjacentText('beforebegin',ch);
       }
+      i++;
+      setTimeout(type, i<30?60:22);
     }
+  }
+  type();
+}
 
-    typeWriter();
+function shareWA(){
+  const url = encodeURIComponent(window.location.href);
+  const msg = encodeURIComponent(`🌙 Eid Mubarak! Tech9et ne mujhe ek khoobsurat surprise bheja — aap bhi dekho: ${window.location.href}`);
+  window.open(`https://wa.me/?text=${msg}`,'_blank');
+}
 
-    // WhatsApp Share
-    function shareWhatsApp() {
-      const currentURL = window.location.href;
-      const msg = `🌙 Eid Mubarak! Click to see your surprise: ${currentURL}`;
-      window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`);
-    }
+function resetPage(){
+  location.reload();
+}
 
-    // Generate stars
-    for (let i = 0; i < 100; i++) {
-      const star = document.createElement("div");
-      star.classList.add("star");
-      star.style.left = Math.random() * 100 + "vw";
-      star.style.top = Math.random() * 100 + "vh";
-      star.style.animationDuration = (Math.random() * 5 + 5) + "s";
-      document.body.appendChild(star);
-    }
-  </script>
-
+// Enter key support
+document.getElementById('nameInput').addEventListener('keydown',e=>{
+  if(e.key==='Enter') startExperience();
+});
+</script>
 </body>
 </html>
